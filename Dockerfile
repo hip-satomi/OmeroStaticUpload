@@ -1,6 +1,5 @@
 FROM continuumio/anaconda3:2021.05
 
-# TODO: do everything as non-root user
 # TODO: install java
 
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
@@ -13,7 +12,8 @@ RUN useradd -ms /bin/bash appuser && \
 
 USER appuser
 
-RUN conda install omero-py -c ome
+RUN conda install omero-py openjdk -c ome -c conda-forge \
+ && conda clean -afy
 
 ENV OMERO_URL="ibt056"
 ENV OMERO_PORT="4064"
@@ -28,4 +28,4 @@ COPY ./data ./data
 
 COPY ./main.py ./
 
-CMD ['python main.py']
+CMD ["python", "main.py"]
