@@ -8,7 +8,7 @@ import glob
 import subprocess
 import acia
 import logging
-from acia.segm.omero.utils import list_projects, list_datasets_in_project, list_images_in_dataset
+from acia.segm.omero.utils import list_projects, list_datasets_in_project, list_images_in_dataset, create_dataset, create_project
 from acia.segm.local import ImageJRoISource
 from acia.segm.omero.storer import OmeroRoIStorer
 import omero
@@ -20,32 +20,14 @@ omero_port = int(os.environ.get('OMERO_PORT', 4064))
 username = os.environ.get('OMERO_USERNAME', 'root')
 password = os.environ.get('OMERO_PASSWORD', 'omero')
 
+credentials = dict(
+    serverUrl=omero_url,
+    username=username,
+    password=password,
+    port=omero_port
+)
+
 base_path = 'data'
-
-def create_project(conn, project_name: str)-> ProjectWrapper:
-    new_project = ProjectWrapper(conn, omero.model.ProjectI())
-    new_project.setName(project_name)
-    new_project.save()
-    return new_project
-
-def create_dataset(conn, projectId: int, dataset_name: str)-> DatasetWrapper:
-    # Use omero.gateway.DatasetWrapper:
-    new_dataset = DatasetWrapper(conn, omero.model.DatasetI())
-    new_dataset.setName(dataset_name)
-    new_dataset.save()
-    # Can get the underlying omero.model.DatasetI with:
-    dataset_obj = new_dataset._obj
-
-    # Create link to project
-    link = omero.model.ProjectDatasetLinkI()
-    # We can use a 'loaded' object, but we might get an Exception
-    # link.setChild(dataset_obj)
-    # Better to use an 'unloaded' object (loaded = False)
-    link.setChild(omero.model.DatasetI(dataset_obj.id.val, False))
-    link.setParent(omero.model.ProjectI(projectId, False))
-    conn.getUpdateService().saveObject(link)
-
-    return new_dataset
 
 # open omero connection
 with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=True) as conn:
@@ -115,10 +97,5 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
 
                     # upload RoIs
                     print(f"Filename: {file_path}, imageId: {image_id}, overlay size: {len(ijrs.overlay.contours)}")
-                    credentials = dict(
-                        serverUrl=omero_url,
-                        username=username,
-                        password=password,
-                        port=omero_port
-                    )
-                    OmeroRoIStorer.store(ijrs.overlay, image_id, **credentials)
+                    if len(ijrs.overlay) > 0:
+                        OmeroRoIStorer.store(ijrs.overlay, image_id, **credentials)
