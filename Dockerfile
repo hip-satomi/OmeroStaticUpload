@@ -11,8 +11,9 @@ RUN useradd -ms /bin/bash appuser && \
     export ENV_NAME="$ENV_NAME" 
 
 USER appuser
+WORKDIR /home
 
-RUN conda install omero-py openjdk -c ome -c conda-forge \
+RUN conda install omero-py openjdk wget=1.20.1 p7zip -c bioconda -c ome -c conda-forge \
  && conda clean -afy
 
 ENV OMERO_URL="ibt056"
@@ -24,8 +25,11 @@ COPY ./requirements.txt ./
 
 RUN pip install -r requirements.txt
 
-COPY ./data ./data
+#COPY ./data ./data
 
 COPY ./main.py ./
+COPY ./download_data.sh ./
+
+RUN bash ./download_data.sh
 
 CMD ["python", "main.py"]
