@@ -16,7 +16,7 @@ WORKDIR /home
 RUN conda install omero-py openjdk wget=1.20.1 p7zip -c bioconda -c ome -c conda-forge \
  && conda clean -afy
 
-ENV OMERO_URL="ibt056"
+ENV OMERO_URL="omero"
 ENV OMERO_PORT="4064"
 ENV OMERO_USERNAME="root"
 ENV OMERO_PASSWORD="omero"
