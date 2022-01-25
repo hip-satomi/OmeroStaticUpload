@@ -25,10 +25,8 @@ credentials = dict(
 
 base_path = 'data'
 
-print(base_path)
 # open omero connection
 with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=True) as conn:
-    print(base_path)
     for project_name in os.listdir(base_path):
         print(project_name)
         # check if project exists
@@ -51,7 +49,6 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
 
 
         for dataset_name in os.listdir(osp.join(base_path, project_name)):
-            print(dataset_name)
             # check if dataset exists
             datasets = list_datasets_in_project(conn, project.getId())
             datasets = list(filter(lambda d: d.getName() == dataset_name, datasets))
@@ -72,7 +69,6 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
 
             os.system("ls " +os.path.join(base_path, project_name, dataset_name))
             for file_path in glob.glob(os.path.join(base_path, project_name, dataset_name, '*.tif')):
-                print(file_path)
                 # check if file already exists
                 file_name = osp.basename(file_path)
                 files = list_images_in_dataset(conn, dataset.getId())
@@ -86,18 +82,3 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
                     print('Upload')
                     subprocess.run(f'omero import -s {omero_url} -u {username} -w {password} -d {dataset.getId()} {file_path} ', shell=True)
                     print(f'Create {omero_path}')
-
-                    files = list_images_in_dataset(conn, dataset.getId())
-                    files = list(filter(lambda f: f.getName() == file_name, files))
-                    image = files[0]
-
-                    # TODO: upload RoIs
-                            # create roi source
-                    #ijrs = ImageJRoISource(file_path)
-                    # lookup omero image id
-                    #image_id = image.getId()
-
-                    # upload RoIs
-                    #print(f"Filename: {file_path}, imageId: {image_id}, overlay size: {len(ijrs.overlay.contours)}")
-                    #if len(ijrs.overlay) > 0:
-                    #    OmeroRoIStorer.store(ijrs.overlay, image_id, **credentials)
