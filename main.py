@@ -2,18 +2,14 @@
 # -- upload tif files to omero
 # -- add rois when available
 
+from email.mime import base
 import os
 import os.path as osp
 import glob
 import subprocess
-import acia
 import logging
-from acia.segm.omero.utils import list_projects, list_datasets_in_project, list_images_in_dataset, create_dataset, create_project
-from acia.segm.local import ImageJRoISource
-from acia.segm.omero.storer import OmeroRoIStorer
-import omero
+from utils import list_projects, list_datasets_in_project, list_images_in_dataset, create_dataset, create_project
 from omero.gateway import BlitzGateway
-from omero.gateway import ProjectWrapper, DatasetWrapper
 
 omero_url = os.environ.get('OMERO_URL', 'omero')
 omero_port = int(os.environ.get('OMERO_PORT', 4064))
@@ -29,9 +25,12 @@ credentials = dict(
 
 base_path = 'data'
 
+print(base_path)
 # open omero connection
 with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=True) as conn:
+    print(base_path)
     for project_name in os.listdir(base_path):
+        print(project_name)
         # check if project exists
         projects = list_projects(conn)
         projects = list(filter(lambda p: p.getName() == project_name, projects))
@@ -52,6 +51,7 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
 
 
         for dataset_name in os.listdir(osp.join(base_path, project_name)):
+            print(dataset_name)
             # check if dataset exists
             datasets = list_datasets_in_project(conn, project.getId())
             datasets = list(filter(lambda d: d.getName() == dataset_name, datasets))
@@ -70,7 +70,9 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
                 dataset = datasets[0]
                 logging.info(f'Project "{dataset_name}" already exists')
 
+            os.system("ls " +os.path.join(base_path, project_name, dataset_name))
             for file_path in glob.glob(os.path.join(base_path, project_name, dataset_name, '*.tif')):
+                print(file_path)
                 # check if file already exists
                 file_name = osp.basename(file_path)
                 files = list_images_in_dataset(conn, dataset.getId())
@@ -91,11 +93,11 @@ with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=Tr
 
                     # TODO: upload RoIs
                             # create roi source
-                    ijrs = ImageJRoISource(file_path)
+                    #ijrs = ImageJRoISource(file_path)
                     # lookup omero image id
-                    image_id = image.getId()
+                    #image_id = image.getId()
 
                     # upload RoIs
-                    print(f"Filename: {file_path}, imageId: {image_id}, overlay size: {len(ijrs.overlay.contours)}")
-                    if len(ijrs.overlay) > 0:
-                        OmeroRoIStorer.store(ijrs.overlay, image_id, **credentials)
+                    #print(f"Filename: {file_path}, imageId: {image_id}, overlay size: {len(ijrs.overlay.contours)}")
+                    #if len(ijrs.overlay) > 0:
+                    #    OmeroRoIStorer.store(ijrs.overlay, image_id, **credentials)
