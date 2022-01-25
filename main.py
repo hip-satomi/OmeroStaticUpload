@@ -11,6 +11,8 @@ import logging
 from utils import list_projects, list_datasets_in_project, list_images_in_dataset, create_dataset, create_project
 from omero.gateway import BlitzGateway
 
+logging.basicConfig(level=logging.INFO)
+
 omero_url = os.environ.get('OMERO_URL', 'omero')
 omero_port = int(os.environ.get('OMERO_PORT', 4064))
 username = os.environ.get('OMERO_USERNAME', 'root')
