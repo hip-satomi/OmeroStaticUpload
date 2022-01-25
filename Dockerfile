@@ -42,5 +42,6 @@ COPY ./run_cellsium.sh ./
 RUN bash ./run_cellsium.sh
 
 COPY ./main.py ./
+COPY ./utils.py ./
 
 CMD ["python", "main.py"]
