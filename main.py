@@ -15,7 +15,7 @@ import omero
 from omero.gateway import BlitzGateway
 from omero.gateway import ProjectWrapper, DatasetWrapper
 
-omero_url = os.environ.get('OMERO_URL', 'ibt056')
+omero_url = os.environ.get('OMERO_URL', 'omero')
 omero_port = int(os.environ.get('OMERO_PORT', 4064))
 username = os.environ.get('OMERO_USERNAME', 'root')
 password = os.environ.get('OMERO_PASSWORD', 'omero')
