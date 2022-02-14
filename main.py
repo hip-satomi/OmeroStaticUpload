@@ -1,8 +1,3 @@
-# TODO: iterate data folder
-# -- upload tif files to omero
-# -- add rois when available
-
-from email.mime import base
 import os
 import os.path as osp
 import glob
