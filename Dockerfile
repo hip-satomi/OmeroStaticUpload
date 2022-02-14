@@ -1,47 +1,62 @@
 FROM continuumio/anaconda3:2021.11
 
+# Make RUN commands use `bash --login`:
+SHELL ["/bin/bash", "--login", "-c"]
+
 # TODO: install java
-RUN apt-get clean
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends libgl1-mesa-glx ca-certificates wget
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends libgl1-mesa-glx ca-certificates wget openjdk-17-jre && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
-ENV ENV_NAME="base"
+RUN conda create -n cellsium python=3.8 cellsium -c modsim -c conda-forge \
+ && conda clean -afy
 
-RUN useradd -ms /bin/bash appuser 
-#&& \
-    #mkdir -p "$MAMBA_ROOT_PREFIX" && \
-    #chmod -R a+rwx "$MAMBA_ROOT_PREFIX" "/home" && \
-    #export ENV_NAME="$ENV_NAME" 
+# Initialize conda in bash config fiiles:
+RUN conda init bash
 
-RUN chown -R appuser /opt/conda
+# Activate the environment, and make sure it's activated:
+RUN echo "conda activate cellsium" > ~/.bashrc
+
+COPY ./run_cellsium.sh ./
+RUN bash ./run_cellsium.sh
+
+FROM continuumio/anaconda3:2021.11
+
+# Make RUN commands use `bash --login`:
+SHELL ["/bin/bash", "--login", "-c"]
+
+# TODO: install java
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates openjdk-17-jre && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN useradd -ms /bin/bash appuser
+RUN chmod a+rwx /opt/conda/
 
 USER appuser
 WORKDIR /home/appuser
 
-RUN conda install python=3.8 omero-py openjdk wget=1.20.1 p7zip -c bioconda -c ome -c conda-forge \
+# copy data from previous stage
+COPY --from=0 /data/ ./data/
+
+# Initialize conda in bash config fiiles:
+RUN conda init bash
+
+# create conda environment with omero-py installed
+RUN conda create -n omero omero-py -c ome \
  && conda clean -afy
+
+# Activate the environment, and make sure it's activated:
+RUN echo "conda activate omero" > ~/.bashrc
 
 ENV OMERO_URL="omero"
 ENV OMERO_PORT="4064"
 ENV OMERO_USERNAME="root"
 ENV OMERO_PASSWORD="omero"
 
-COPY ./requirements.txt ./
-
-RUN pip install -r requirements.txt
-
-#COPY ./data ./data
-
-COPY ./download_data.sh ./
-
-COPY ./run_cellsium.sh ./
-
-#RUN bash ./download_data.sh
-RUN bash ./run_cellsium.sh
-
 COPY ./main.py ./
 COPY ./utils.py ./
 
-CMD ["python", "main.py"]
+CMD ["conda", "run", "-n", "omero", "python", "main.py"]
