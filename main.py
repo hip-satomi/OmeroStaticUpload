@@ -10,6 +10,10 @@ import subprocess
 import logging
 from utils import list_projects, list_datasets_in_project, list_images_in_dataset, create_dataset, create_project
 from omero.gateway import BlitzGateway
+import time
+
+# sleep for some time as the omero server takes some time to boot
+time.sleep(30)
 
 logging.basicConfig(level=logging.INFO)
 
