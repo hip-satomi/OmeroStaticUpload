@@ -7,10 +7,9 @@ from utils import list_projects, list_datasets_in_project, list_images_in_datase
 from omero.gateway import BlitzGateway
 import time
 
-# sleep for some time as the omero server takes some time to boot
-time.sleep(30)
-
 logging.basicConfig(level=logging.INFO)
+
+MAX_RETRIES = 10
 
 omero_url = os.environ.get('OMERO_URL', 'omero')
 omero_port = int(os.environ.get('OMERO_PORT', 4064))
@@ -25,6 +24,23 @@ credentials = dict(
 )
 
 base_path = 'data'
+
+# testing connection
+for i in range(MAX_RETRIES):
+    try:
+        with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=True) as conn:
+            # successfully established connection
+            break
+    except:
+        # connection failed
+        logging.warning(f'Cannot establish connection to omero. Try: {i}/{MAX_RETRIES}')
+        # wait for 10 seconds until next try
+        time.sleep(10)
+
+        if i == MAX_RETRIES - 1:
+            # never established a connection
+            logging.error('All connections to omero failed!')
+            exit(1)
 
 # open omero connection
 with BlitzGateway(username, password, host=omero_url, port=omero_port, secure=True) as conn:
