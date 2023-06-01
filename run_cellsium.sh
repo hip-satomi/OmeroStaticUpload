@@ -1,4 +1,8 @@
-path="./data/Simulation_Project/Simulation_Dataset/"
+# set the output path
+path="/data/Simulation_Project/Simulation_Dataset/"
+
+# create the path
+mkdir -p ${path}
 
 python -m cellsium -t SimulationDuration=8 --Output TiffOutput -o ${path}/sim1 -t Seed=1
 python -m cellsium -t SimulationDuration=8 --Output TiffOutput -o ${path}/sim2 -t Seed=2
