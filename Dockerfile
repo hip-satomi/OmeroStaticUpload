@@ -9,6 +9,8 @@ RUN apt-get clean && \
     apt-get install -y --no-install-recommends libgl1-mesa-glx ca-certificates wget openjdk-17-jre && \
     rm -rf /var/lib/apt/lists/*
 
+RUN conda config --remove channels defaults
+
 RUN conda create -n cellsium python=3.8 cellsium -c modsim -c conda-forge \
  && conda clean -afy
 
